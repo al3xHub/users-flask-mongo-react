@@ -9,10 +9,11 @@ interface UserFormProps {
 
 export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
   const [formData, setFormData] = React.useState({
-    name: user?.name || '',
+    username: user?.username || '',
     email: user?.email || '',
+    password: '', // Este solo se usará al crear un usuario
     role: user?.role || 'user',
-    status: user?.status || 'active'
+    status: user?.status || 'active',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -29,8 +30,8 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
         <input
           type="text"
           id="name"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          value={formData.username}
+          onChange={(e) => setFormData({ ...formData, username: e.target.value })}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           required
         />
@@ -49,6 +50,23 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
           required
         />
       </div>
+
+      {/* Condicional para mostrar el campo de contraseña solo al crear un usuario */}
+      {!user && (
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            Password
+          </label>
+          <input
+            type="password"
+            id="password"
+            value={formData.password}
+            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            required
+          />
+        </div>
+      )}
 
       <div>
         <label htmlFor="role" className="block text-sm font-medium text-gray-700">

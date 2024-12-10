@@ -1,51 +1,56 @@
-import { useState } from 'react';
-import { User } from '../types/user';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-hot-toast';
+import { userApi } from '../services/api';
+import type { User, CreateUserData, UpdateUserData } from '../types/user';
 
-// This is a mock implementation that will be replaced with actual API calls later
 export function useUsers() {
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: '1',
-      name: 'John Doe',
-      email: 'john@example.com',
-      role: 'admin',
-      status: 'active',
-      createdAt: new Date().toISOString(),
-      lastLogin: new Date().toISOString(),
+  const queryClient = useQueryClient();
+
+  const { data: users = [], isLoading, error } = useQuery({
+    queryKey: ['users'],
+    queryFn: userApi.getUsers,
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (userData: CreateUserData) => userApi.createUser(userData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('User created successfully');
     },
-    {
-      id: '2',
-      name: 'Jane Smith',
-      email: 'jane@example.com',
-      role: 'user',
-      status: 'active',
-      createdAt: new Date().toISOString(),
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to create user');
     },
-  ]);
+  });
 
-  const addUser = (userData: Omit<User, 'id' | 'createdAt'>) => {
-    const newUser: User = {
-      ...userData,
-      id: Math.random().toString(36).substr(2, 9),
-      createdAt: new Date().toISOString(),
-    };
-    setUsers([...users, newUser]);
-  };
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateUserData }) =>
+      userApi.updateUser(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('User updated successfully');
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to update user');
+    },
+  });
 
-  const updateUser = (id: string, userData: Partial<User>) => {
-    setUsers(users.map(user => 
-      user.id === id ? { ...user, ...userData } : user
-    ));
-  };
-
-  const deleteUser = (id: string) => {
-    setUsers(users.filter(user => user.id !== id));
-  };
+  const deleteMutation = useMutation({
+    mutationFn: userApi.deleteUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('User deleted successfully');
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to delete user');
+    },
+  });
 
   return {
     users,
-    addUser,
-    updateUser,
-    deleteUser,
+    isLoading,
+    error,
+    addUser: createMutation.mutate,
+    updateUser: (id: string, data: UpdateUserData) => updateMutation.mutate({ id, data }),
+    deleteUser: deleteMutation.mutate,
   };
 }

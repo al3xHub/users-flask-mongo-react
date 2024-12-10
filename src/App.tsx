@@ -1,12 +1,24 @@
 import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { Toaster } from 'react-hot-toast';
 import { UserList } from './components/UserList';
 import { UserForm } from './components/UserForm';
 import { useUsers } from './hooks/useUsers';
 import { User } from './types/user';
 
-function App() {
-  const { users, addUser, updateUser, deleteUser } = useUsers();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60, // 1 minute
+      retry: 1,
+    },
+  },
+});
+
+function UserManagement() {
+  const { users, isLoading, error, addUser, updateUser, deleteUser } = useUsers();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | undefined>();
 
@@ -60,6 +72,8 @@ function App() {
             <div className="bg-white shadow rounded-lg">
               <UserList
                 users={users}
+                isLoading={isLoading}
+                error={error as Error | null}
                 onEdit={handleEdit}
                 onDelete={deleteUser}
               />
@@ -68,6 +82,16 @@ function App() {
         </div>
       </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <UserManagement />
+      <Toaster position="top-right" />
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   );
 }
 

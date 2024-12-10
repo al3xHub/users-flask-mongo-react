@@ -16,12 +16,12 @@ export function UserRow({ user, onEdit, onDelete }: UserRowProps) {
           <div className="flex-shrink-0 h-10 w-10">
             <img
               className="h-10 w-10 rounded-full"
-              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
-              alt={user.name}
+              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}&background=random`}
+              alt={user.username}
             />
           </div>
           <div className="ml-4">
-            <div className="text-sm font-medium text-gray-900">{user.name}</div>
+            <div className="text-sm font-medium text-gray-900">{user.username}</div>
           </div>
         </div>
       </td>
